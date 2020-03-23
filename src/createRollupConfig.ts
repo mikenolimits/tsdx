@@ -6,6 +6,7 @@ import { DEFAULT_EXTENSIONS } from '@babel/core';
 // import babel from 'rollup-plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
+import { preserveShebangs } from 'rollup-plugin-preserve-shebangs';
 import replace from '@rollup/plugin-replace';
 import resolve from '@rollup/plugin-node-resolve';
 import sourceMaps from 'rollup-plugin-sourcemaps';
@@ -19,9 +20,6 @@ import { TsdxOptions } from './types';
 const errorCodeOpts = {
   errorMapFilePath: paths.appErrorsJson,
 };
-
-// shebang cache map thing because the transform only gets run once
-let shebang: any = {};
 
 export async function createRollupConfig(
   opts: TsdxOptions
@@ -123,26 +121,7 @@ export async function createRollupConfig(
           include: /\/node_modules\//,
         }),
       json(),
-      {
-        // Custom plugin that removes shebang from code because newer
-        // versions of bublé bundle their own private version of `acorn`
-        // and I don't know a way to patch in the option `allowHashBang`
-        // to acorn. Taken from microbundle.
-        // See: https://github.com/Rich-Harris/buble/pull/165
-        transform(code: string) {
-          let reg = /^#!(.*)/;
-          let match = code.match(reg);
-
-          shebang[opts.name] = match ? '#!' + match[1] : '';
-
-          code = code.replace(reg, '');
-
-          return {
-            code,
-            map: null,
-          };
-        },
-      },
+      preserveShebangs(),
       typescript({
         typescript: ts,
         cacheRoot: `./node_modules/.cache/tsdx/${opts.format}/`,
