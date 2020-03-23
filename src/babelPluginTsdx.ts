@@ -67,6 +67,7 @@ export const babelPluginTsdx = babelPlugin.custom(() => ({
         //   pragma: customOptions.jsx || 'h',
         //   pragmaFrag: customOptions.jsxFragment || 'Fragment',
         // },
+        { name: 'babel-plugin-macros' },
         { name: 'babel-plugin-annotate-pure-calls' },
         { name: 'babel-plugin-dev-expression' },
         customOptions.format !== 'cjs' && {
@@ -89,9 +90,6 @@ export const babelPluginTsdx = babelPlugin.custom(() => ({
         {
           name: '@babel/plugin-transform-regenerator',
           async: false,
-        },
-        {
-          name: 'babel-plugin-macros',
         },
         isTruthy(customOptions.extractErrors) && {
           name: './errors/transformErrorMessages',
